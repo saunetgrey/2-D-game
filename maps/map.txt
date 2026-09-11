@@ -1,0 +1,31 @@
+80 14 32 32 
+// mapWidth  mapHeight  tileWidth  tileHeight
+// The first line should contain the width and height of the
+// map and the width and height of each tile. A list of character to
+// tile mappings is then provided where each character is preceded by a
+// # character. The dot character always defaults to a blank space 
+// Note that the referenced files should be in the same directory as the
+// tile map.
+#p=1 Tiles/IndustrialTile_02.png
+#t=1 Tiles/IndustrialTile_09.png
+#b=1 Tiles/IndustrialTile_72.png
+#z=1 Tiles/IndustrialTile_73.png
+// The actual tile map is preceded by the #map line
+#map
+..zz........................................................................zz..
+..zz........................................................................zz..
+..zz........................................................................zz..
+..zz........................................................................zz..
+..zz........................................................................zz..
+..zz...........................z............z...............................zz..
+..zz....................bbb...bbbbbbbbbbbbbbbb...bbb........................zz..
+..zz........................................................................zz..
+..zz................bb................................bb....................zz..
+..zz........................................................................zz..
+..zz............bb........................................bb....................
+..zz....................z..........................z............................
+tttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt
+pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+
+
+
