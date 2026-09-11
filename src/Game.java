@@ -284,12 +284,6 @@ public class Game extends GameCore {
 		g.drawImage(backg4, (int) (xo * 0.4f)+8, 0, backg4.getWidth(null)+246, backg4.getHeight(null)+190, null, null);
 		g.drawImage(backg5, (int) (xo * 0.5f)+8, 0, backg5.getWidth(null)+246, backg5.getHeight(null)+190, null, null);
 
-		if (moveLeft) { 
-			player.setScale(-1, 1);
-			player.drawTransformed(g);
-			flip = true;
-		}
-
 		// Apply offsets to sprites then draw them
 		for (Sprite s: clouds) {
 			s.setOffsets(xo,yo);
@@ -309,7 +303,11 @@ public class Game extends GameCore {
 		// Apply offsets to player and draw 
 		player.setOffsets(xo, yo);
 
-		if (!moveLeft) {
+		if (moveLeft) {
+			player.setScale(-1, 1);
+			player.drawTransformed(g);
+			flip = true;
+		} else {
 			player.draw(g);
 		}
 

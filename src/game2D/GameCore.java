@@ -20,10 +20,9 @@ public abstract class GameCore extends JFrame implements KeyListener, MouseListe
 	private static final long serialVersionUID = 1L;
 	protected static final int FONT_SIZE = 12;
 
-	private boolean stop;			// true if the game loop should continue
+	private volatile boolean stop;			// true if the game loop should continue
 	private	long startTime;				// The time the game started
 	private long currTime;				// The current time
-	private long elapsedTime;			// Elapsed time since previous check
 
 	private long frames;				// Used to calculate frames per second (FPS)
 
@@ -105,39 +104,63 @@ public abstract class GameCore extends JFrame implements KeyListener, MouseListe
 	public void gameLoop() {
 		startTime = System.currentTimeMillis();
 		currTime = startTime;
-		frames = 1;		// Keep a note of frames for performance measure
-
-		Graphics2D g;
+		frames = 0;
 		stop = false;
 
-		// Create our own buffer
 		buffer = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
-		bg = (Graphics2D)buffer.createGraphics();
+		bg = buffer.createGraphics();
 		bg.setClip(0, 0, getWidth(), getHeight());
 
+		final long frameNanos = 1_000_000_000L / 60;
+		long previousTime = System.nanoTime();
+		long nextFrame = previousTime;
+		long remainingNanos = 0;
+
 		while (!stop) {
-			elapsedTime = System.currentTimeMillis() - currTime;
-			currTime += elapsedTime;
-
-			// Call the overridden update method
-			update(elapsedTime);
-
-			// Get the current graphics device 	            
-			g = (Graphics2D)getGraphics();
-
-			if (g != null)
-			{
-				draw(bg);
-				g.drawImage(buffer,null,0,0);
+			long now = System.nanoTime();
+			// Limit catch-up after a stall to avoid large movement/collision jumps.
+			remainingNanos += Math.min(now - previousTime, 100_000_000L);
+			previousTime = now;
+			long elapsedMillis = remainingNanos / 1_000_000L;
+			remainingNanos %= 1_000_000L;
+			// Small physics steps keep collisions stable even on a slow frame.
+			while (elapsedMillis > 0 && !stop) {
+				long step = Math.min(elapsedMillis, 8);
+				update(step);
+				elapsedMillis -= step;
 			}
-			frames++;
 
-			// take a nap
-			try { Thread.sleep(10); } catch (InterruptedException ex) { }
+			Graphics2D g = (Graphics2D)getGraphics();
+			if (g != null) {
+				try {
+					draw(bg);
+					g.drawImage(buffer, null, 0, 0);
+				} finally {
+					g.dispose();
+				}
+				frames++;
+			}
+			currTime = System.currentTimeMillis();
+
+			// Sleep only for the time left in this frame, including rendering cost.
+			nextFrame += frameNanos;
+			long waitNanos = nextFrame - System.nanoTime();
+			if (waitNanos < 0) {
+				nextFrame = System.nanoTime();
+			}
+			try {
+				while (waitNanos > 0 && !stop) {
+					Thread.sleep(waitNanos / 1_000_000L, (int)(waitNanos % 1_000_000L));
+					waitNanos = nextFrame - System.nanoTime();
+				}
+			} catch (InterruptedException ex) {
+				Thread.currentThread().interrupt();
+				stop = true;
+			}
 		}
+		bg.dispose();
 		System.exit(0);
 	}
-
 	/**
 	 * @return The current frames per second (FPS)
 	 */
