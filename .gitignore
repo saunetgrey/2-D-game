@@ -1,0 +1,12 @@
+# Java build output
+/bin/
+*.class
+
+# JVM crash logs
+hs_err_pid*
+replay_pid*
+
+# Operating-system metadata
+.DS_Store
+Thumbs.db
+Desktop.ini
